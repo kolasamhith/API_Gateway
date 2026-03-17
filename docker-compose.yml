@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  gateway:
+    build: .
+    command: node index.js
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_HOST=redis
+      - MONGO_URI=mongodb://mongo:27017/gatewayLogs
+      - ORDER_URL=http://mock-services:8081/orders
+      - PRODUCT_URL=http://mock-services:8082/products
+    depends_on:
+      - redis
+      - mongo
+      - mock-services
+
+  mock-services:
+    build: .
+    command: node mock-services.js
+    ports:
+      - "8081:8081"
+      - "8082:8082"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
